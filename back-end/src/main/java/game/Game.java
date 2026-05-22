@@ -51,6 +51,26 @@ public class Game {
         return new Game(this.board.updateCell(x, y, this.player), nextPlayer, newHistory);
     }
 
+    public Game undo() {
+        if (this.history.isEmpty())
+            return this;
+        return this.history.get(this.history.size() - 1);
+    }
+
+    public boolean canUndo() {
+        return !this.history.isEmpty();
+    }
+
+    public boolean isDraw() {
+        if (this.getWinner() != null)
+            return false;
+        for (int x = 0; x <= 2; x++)
+            for (int y = 0; y <= 2; y++)
+                if (this.board.getCell(x, y) == null)
+                    return false;
+        return true;
+    }
+
     public Player getWinner() {
         for (int row = 0; row < 3; row++)
             if (board.getCell(row, 0) != null && board.getCell(row, 0) == board.getCell(row, 1)

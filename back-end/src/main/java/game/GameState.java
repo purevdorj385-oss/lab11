@@ -5,14 +5,31 @@ import java.util.Arrays;
 public class GameState {
 
     private final Cell[] cells;
+    private final String winner;
+    private final String nextPlayer;
+    private final String status;
+    private final boolean canUndo;
 
-    private GameState(Cell[] cells) {
+    private GameState(Cell[] cells, String winner, String nextPlayer, String status, boolean canUndo) {
         this.cells = cells;
+        this.winner = winner;
+        this.nextPlayer = nextPlayer;
+        this.status = status;
+        this.canUndo = canUndo;
     }
 
     public static GameState forGame(Game game) {
         Cell[] cells = getCells(game);
-        return new GameState(cells);
+        String winner = playerText(game.getWinner());
+        String nextPlayer = playerText(game.getPlayer());
+        String status;
+        if (!winner.isEmpty())
+            status = winner + " wins!";
+        else if (game.isDraw())
+            status = "Draw!";
+        else
+            status = nextPlayer + "'s turn";
+        return new GameState(cells, winner, nextPlayer, status, game.canUndo());
     }
 
     public Cell[] getCells() {
@@ -26,13 +43,20 @@ public class GameState {
     @Override
     public String toString() {
         return """
-                { "cells": %s}
-                """.formatted(Arrays.toString(this.cells));
+                {
+                    "cells": %s,
+                    "winner": "%s",
+                    "nextPlayer": "%s",
+                    "status": "%s",
+                    "canUndo": %b
+                }
+                """.formatted(Arrays.toString(this.cells), this.winner, this.nextPlayer, this.status, this.canUndo);
     }
 
     private static Cell[] getCells(Game game) {
         Cell cells[] = new Cell[9];
         Board board = game.getBoard();
+        boolean hasWinner = game.getWinner() != null;
         for (int x = 0; x <= 2; x++) {
             for (int y = 0; y <= 2; y++) {
                 String text = "";
@@ -43,12 +67,20 @@ public class GameState {
                 else if (player == Player.PLAYER1)
                     text = "O";
                 else if (player == null) {
-                    playable = true;
+                    playable = !hasWinner;
                 }
                 cells[3 * y + x] = new Cell(x, y, text, playable);
             }
         }
         return cells;
+    }
+
+    private static String playerText(Player player) {
+        if (player == Player.PLAYER0)
+            return "X";
+        if (player == Player.PLAYER1)
+            return "O";
+        return "";
     }
 }
 
